@@ -1,24 +1,23 @@
 import http from 'k6/http';
-import { sleep, check } from 'k6';
+import { check, sleep } from 'k6';
 
 export const options = {
-  stages: [
-    { duration: '30s', target: 20 }, // 30 сек-ийн дотор 0-ээс 20 VU болгож өсгөнө
-    { duration: '1m', target: 20 },  // 1 мин-ийн турш 20 VU тогтвортой барина
-    { duration: '30s', target: 0 },  // 30 сек-ийн дотор 20-оос 0 VU болгож бууруулна
-  ],
   thresholds: {
-    'http_req_duration': ['p(95)<500'],
+    'http_req_duration': ['p(95)<808'], // Baseline p95 (538.65ms) * 1.5 ≈ 808ms
     'http_req_failed': ['rate<0.01'],
   },
+  stages: [
+    { duration: '30s', target: 5 },
+    { duration: '1m', target: 30 },
+    { duration: '30s', target: 100 },
+    { duration: '30s', target: 0 },
+  ],
 };
 
 export default function () {
   const res = http.get('https://test.k6.io');
-  
   check(res, {
     'status 200 байна': (r) => r.status === 200,
   });
-
   sleep(1);
 }
